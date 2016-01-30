@@ -1,12 +1,19 @@
-#include"json_write.h"
-#include<utility>
-
+#include "json_write.h"
+#include <utility>
+#include <iostream>
 int main() {
-	json_write json("test.json", "Data");
-	boost::property_tree::ptree p, child;
-	json.write_int_data(child, "num", 12);
-	json.write_string_data(child, "str", "�݂肠");
-	p.push_back(std::make_pair("", child));
-	json.end(p);
+	try {
+		std::locale::global(std::locale("japanese"));
+		boost::property_tree::wptree p, child;
+		child | put_value(L"num", 12);
+		child | put_value(L"str", L"�݂肠");
+		p.push_back(std::make_pair(L"", child));
+		std::cout << "start writing json...";
+		write_utf8_with_bom_file("test.json", p);
+		std::cout << "done." << std::endl;
+	}
+	catch (const std::exception& er) {
+		std::cerr << er.what() << std::endl;
+	}
 	return 0;
 }

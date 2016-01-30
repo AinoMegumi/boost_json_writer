@@ -1,22 +1,33 @@
-#include"json_write.h"
+﻿#include"json_write.h"
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
-#include <boost/optional.hpp>
-
-json_write::json_write(std::string filepath, std::string parent) {
-	this->filepath = filepath;
-	this->parent = parent;
+#include <fstream>
+#include <locale>
+#include <codecvt>
+namespace detail {
+	void create_utf8_with_bom_file(const char* filename) {
+		std::ofstream file(filename, std::ios::out | std::ios::binary);
+		constexpr unsigned char utf8[] = { 0xEF, 0xBB, 0xBF, '\0' };
+		file << utf8;
+	}
 }
-
-void json_write::write_string_data(boost::property_tree::ptree& p, std::string tag, std::string data) {
-	p.put(tag, data);
+void write_utf8_with_bom_file(const char* filename, const boost::property_tree::wptree& tree) {
+	detail::create_utf8_with_bom_file(filename);
+	std::wofstream file;
+	file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	file.open(filename, std::ios::app | std::ios::binary);
+	file.imbue(std::locale(std::locale("japanese"), new std::codecvt_utf8_utf16<wchar_t>()));//UTF16 -> UTF-8(wchar_t in Windows.)
+	boost::property_tree::write_json(file, tree);
 }
-
-void json_write::write_int_data(boost::property_tree::ptree& p, std::string tag, int data) {
-	this->write_string_data(p, tag, std::to_string(data));
+void write_utf8_with_bom_file(const std::string& filename, const boost::property_tree::wptree& tree) {
+	write_utf8_with_bom_file(filename.c_str(), tree);
 }
-
-void json_write::end(boost::property_tree::ptree child) {
-	this->pt.add_child(this->parent, child);
-	write_json(this->filepath, this->pt);
+#ifndef _WIN32
+void write_utf8_with_bom_file(const char* filename, const boost::property_tree::ptree& tree) {
+	detail::create_utf8_with_bom_file(filename);
+	std::ofstream file(filename, std::ios::app | std::ios::binary);
+	boost::property_tree::write_json(file, tree);
 }
+void write_utf8_with_bom_file(const std::wstring& filename, const boost::property_tree::wptree& tree) {
+	write_utf8_with_bom_file(filename.c_str(), tree);
+}
+#endif
