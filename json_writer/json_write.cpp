@@ -27,7 +27,7 @@ void write_utf8_with_bom_file(const char* filename, const boost::property_tree::
 	std::ofstream file(filename, std::ios::app | std::ios::binary);
 	boost::property_tree::write_json(file, tree);
 }
-void write_utf8_with_bom_file(const std::wstring& filename, const boost::property_tree::wptree& tree) {
+void write_utf8_with_bom_file(const std::string& filename, const boost::property_tree::wptree& tree) {
 	write_utf8_with_bom_file(filename.c_str(), tree);
 }
 #endif
