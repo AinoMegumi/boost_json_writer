@@ -1,4 +1,4 @@
-#include "json_write.h"
+﻿#include "json_write.h"
 #include <utility>
 #include <iostream>
 int main() {
@@ -6,7 +6,7 @@ int main() {
 		std::locale::global(std::locale("japanese"));
 		boost::property_tree::wptree top, p, child;
 		child | put_value(L"num", 12);
-		child | put_value(L"str", L"�݂肠");
+		child | put_value(L"str", L"みりあ");
 		p.push_back(std::make_pair(L"", child));
 		top.add_child(L"Data", child);
 		std::cout << "start writing json...";
