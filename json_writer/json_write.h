@@ -14,6 +14,34 @@ namespace detail {
 	struct arithmetic_to_string_helper<wchar_t, T> {
 		std::wstring operator()(T n) { return std::to_wstring(n); }
 	};
+	template<typename T>
+	struct arithmetic_to_string_helper<char16_t, T> {
+		std::u16string operator()(T n) { 
+			std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> u8u16cvt;
+			if (sizeof(wchar_t) == 2) {
+				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> wcvt;
+				return u8u16cvt.from_bytes(wcvt.to_bytes(std::to_wstring(n)));
+			}
+			else {
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> wcvt;
+				return u8u16cvt.from_bytes(wcvt.to_bytes(std::to_wstring(n)));
+			}
+		}
+	};
+	template<typename T>
+	struct arithmetic_to_string_helper<char32_t, T> {
+		std::u32string operator()(T n) {
+			std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> u8u32cvt;
+			if (sizeof(wchar_t) == 2) {
+				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> wcvt;
+				return u8u32cvt.from_bytes(wcvt.to_bytes(std::to_wstring(n)));
+			}
+			else {
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> wcvt;
+				return u8u32cvt.from_bytes(wcvt.to_bytes(std::to_wstring(n)));
+			}
+		}
+	};
 
 	template<typename char_type, typename T, std::enable_if_t < std::is_arithmetic<T>::value, nullptr_t> = nullptr>
 	std::basic_string<char_type> arithmetic_to_string(T n) {
